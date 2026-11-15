@@ -1,0 +1,283 @@
+// Prisma Schema for BloodBond Bangladesh
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model User {
+  id            String    @id @default(uuid())
+  phone         String    @unique
+  email         String?   @unique
+  passwordHash  String
+  role          String    @default("DONOR") // DONOR, SEEKER, ADMIN
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  donorProfile  DonorProfile?
+  bloodRequests BloodRequest[]
+  notifications Notification[]
+  savedDonors   SavedDonor[]
+  auditLogs     AuditLog[]
+  reportsFiled  ReportedProfile[] @relation("ReporterUser")
+}
+
+model DonorProfile {
+  id                     String             @id @default(uuid())
+  userId                 String             @unique
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName               String
+  bloodGroup             String             // A+, A-, B+, B-, AB+, AB-, O+, O-
+  dateOfBirth            DateTime?
+  gender                 String?            // Male, Female, Other
+  divisionId             String
+  division               GeographicDivision @relation(fields: [divisionId], references: [id])
+  districtId             String
+  district               GeographicDistrict @relation(fields: [districtId], references: [id])
+  upazilaId              String
+  upazila                GeographicUpazila  @relation(fields: [upazilaId], references: [id])
+  areaName               String             // e.g. "Wari", "Dhanmondi"
+  addressDetails         String?
+  latitude               Float?
+  longitude              Float?
+  lastDonationDate       DateTime?
+  nextEligibleDate       DateTime?
+  availabilityStatus     String             @default("AVAILABLE") // AVAILABLE, UNAVAILABLE, TEMPORARILY_BUSY
+  verificationStatus     String             @default("UNVERIFIED") // UNVERIFIED, PENDING, VERIFIED, REJECTED
+  preferredContactMethod String             @default("PHONE")     // PHONE, SMS, IN_APP
+  consentGiven           Boolean            @default(true)
+  responseRate           Float              @default(1.0) // 0.0 to 1.0
+  totalDonationsCount    Int                @default(0)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  donationRecords        DonationRecord[]
+  requestResponses       RequestResponse[]
+  matchResults           MatchResult[]
+  verifications          DonorVerification[]
+  savedBySeekers         SavedDonor[]
+  reportsReceived        ReportedProfile[]  @relation("ReportedDonor")
+
+  @@index([bloodGroup])
+  @@index([availabilityStatus])
+  @@index([divisionId, districtId, upazilaId])
+  @@index([nextEligibleDate])
+}
+
+model BloodRequest {
+  id                 String             @id @default(uuid())
+  seekerId           String
+  seeker             User               @relation(fields: [seekerId], references: [id], onDelete: Cascade)
+  patientBloodGroup  String             // e.g. "O+"
+  unitsNeeded        Int                @default(1)
+  hospitalName       String
+  divisionId         String
+  division           GeographicDivision @relation(fields: [divisionId], references: [id])
+  districtId         String
+  district           GeographicDistrict @relation(fields: [districtId], references: [id])
+  upazilaId          String
+  upazila            GeographicUpazila  @relation(fields: [upazilaId], references: [id])
+  areaName           String
+  latitude           Float?
+  longitude          Float?
+  requiredDate       DateTime
+  emergencyPriority  String             @default("URGENT") // CRITICAL, URGENT, STANDARD
+  preferredContact   String             @default("PHONE")
+  contactPhone       String
+  notes              String?
+  status             String             @default("OPEN") // OPEN, MATCHED, FULFILLED, CANCELLED
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  requestResponses   RequestResponse[]
+  matchResults       MatchResult[]
+
+  @@index([patientBloodGroup])
+  @@index([status])
+  @@index([divisionId, districtId, upazilaId])
+}
+
+model DonationRecord {
+  id               String       @id @default(uuid())
+  donorProfileId   String
+  donorProfile     DonorProfile @relation(fields: [donorProfileId], references: [id], onDelete: Cascade)
+  donationDate     DateTime
+  hospitalName     String
+  units            Int          @default(1)
+  componentType    String       @default("WHOLE_BLOOD") // WHOLE_BLOOD, RBC, PLATELETS, PLASMA
+  verifiedByAdmin  Boolean      @default(false)
+  notes            String?
+  createdAt        DateTime     @default(now())
+
+  @@index([donorProfileId])
+  @@index([donationDate])
+}
+
+model GeographicDivision {
+  id            String               @id
+  name          String               @unique
+  bnName        String
+  code          String               @unique
+  latitude      Float
+  longitude     Float
+  districts     GeographicDistrict[]
+  donorProfiles DonorProfile[]
+  bloodRequests BloodRequest[]
+}
+
+model GeographicDistrict {
+  id            String             @id
+  divisionId    String
+  division      GeographicDivision @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  name          String
+  bnName        String
+  code          String             @unique
+  latitude      Float
+  longitude     Float
+  upazilas      GeographicUpazila[]
+  donorProfiles DonorProfile[]
+  bloodRequests BloodRequest[]
+
+  @@index([divisionId])
+}
+
+model GeographicUpazila {
+  id            String             @id
+  districtId    String
+  district      GeographicDistrict @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  name          String
+  bnName        String
+  latitude      Float
+  longitude     Float
+  areas         GeographicArea[]
+  donorProfiles DonorProfile[]
+  bloodRequests BloodRequest[]
+
+  @@index([districtId])
+}
+
+model GeographicArea {
+  id          String            @id
+  upazilaId   String
+  upazila     GeographicUpazila @relation(fields: [upazilaId], references: [id], onDelete: Cascade)
+  name        String
+  bnName      String
+  postalCode  String?
+  latitude    Float
+  longitude   Float
+
+  @@index([upazilaId])
+}
+
+model MatchResult {
+  id                 String       @id @default(uuid())
+  requestId          String
+  request            BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donorProfileId     String
+  donorProfile       DonorProfile @relation(fields: [donorProfileId], references: [id], onDelete: Cascade)
+  deterministicScore Float
+  rankingScore       Float
+  explanation        String
+  distanceKm         Float?
+  createdAt          DateTime     @default(now())
+
+  @@index([requestId])
+}
+
+model RequestResponse {
+  id             String       @id @default(uuid())
+  requestId      String
+  request        BloodRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  donorProfileId String
+  donorProfile   DonorProfile @relation(fields: [donorProfileId], references: [id], onDelete: Cascade)
+  status         String       @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  message        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([requestId, donorProfileId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // EMERGENCY_REQUEST, REMINDER, ELIGIBILITY_UPDATE, VERIFICATION, REQUEST_STATUS
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}
+
+model DonorVerification {
+  id             String       @id @default(uuid())
+  donorProfileId String
+  donorProfile   DonorProfile @relation(fields: [donorProfileId], references: [id], onDelete: Cascade)
+  status         String       @default("PENDING") // PENDING, VERIFIED, REJECTED
+  reviewedBy     String?
+  notes          String?
+  verifiedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([donorProfileId])
+}
+
+model EligibilityPolicy {
+  id           String   @id @default(uuid())
+  name         String
+  version      Int      @default(1)
+  intervalDays Int      @default(90) // safety interval days between donations
+  description  String?
+  isActive     Boolean  @default(true)
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // e.g. "DONOR_VERIFIED", "POLICY_UPDATED", "DONOR_REPORTED", "LOGIN_SUCCESS"
+  resource   String   // e.g. "DonorProfile:123"
+  details    String?  // JSON string or notes
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([action])
+  @@index([createdAt])
+}
+
+model SavedDonor {
+  id             String       @id @default(uuid())
+  seekerId       String
+  seeker         User         @relation(fields: [seekerId], references: [id], onDelete: Cascade)
+  donorProfileId String
+  donorProfile   DonorProfile @relation(fields: [donorProfileId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([seekerId, donorProfileId])
+}
+
+model ReportedProfile {
+  id             String       @id @default(uuid())
+  reporterId     String
+  reporter       User         @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedDonorId String
+  reportedDonor  DonorProfile @relation("ReportedDonor", fields: [reportedDonorId], references: [id], onDelete: Cascade)
+  reason         String
+  status         String       @default("PENDING") // PENDING, INVESTIGATED, RESOLVED, DISMISSED
+  notes          String?
+  createdAt      DateTime     @default(now())
+
+  @@index([status])
+}

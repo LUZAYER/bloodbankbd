@@ -1,0 +1,19 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 100,
+  "accuracy": 0.975,
+  "roc_auc": 0.9767,
+  "precision": 0.9904,
+  "recall": 0.974,
+  "feature_importances": {
+    "is_available": 0.632,
+    "compat_score": 0.3148,
+    "distance_km": 0.0161,
+    "response_rate": 0.0152,
+    "days_since_donation": 0.0131,
+    "prev_donations": 0.0058,
+    "urgency": 0.0029
+  },
+  "dataset_type": "Demonstration (Synthetic Healthcare Emergency Dynamics)",
+  "medical_safety_guarantee": "ABO/Rh compatibility strictly enforced prior to ranking"
+}

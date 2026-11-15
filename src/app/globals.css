@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #0f172a;
+  --background: #ffffff;
+}
+
+html.dark {
+  --foreground: #ffe4e6;
+  --background: #070103;
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  min-height: 100vh;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Bloody Dark & Clean Light Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #0d0205;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #b91c1c;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #ef4444;
+}
+
+/* Dark mode subtle dark-crimson tile adjustment for OpenStreetMap */
+html.dark .leaflet-tile-pane {
+  filter: brightness(0.72) invert(1) contrast(2.6) hue-rotate(200deg) saturate(0.25) brightness(0.75);
+}
+
+html.dark .leaflet-container {
+  background: #0d0205 !important;
+}
+
+/* Leaflet dark popup styling */
+html.dark .leaflet-popup-content-wrapper {
+  background-color: #150409 !important;
+  color: #ffe4e6 !important;
+  border: 1px solid #4a0d1b !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(220, 38, 38, 0.3) !important;
+}
+
+html.dark .leaflet-popup-tip {
+  background-color: #150409 !important;
+  border: 1px solid #4a0d1b !important;
+}
+
+html.dark .leaflet-popup-content div {
+  color: #ffe4e6 !important;
+}
+
+html.dark .leaflet-popup-content div[style*="color: #0f172a"] {
+  color: #ffffff !important;
+}
+
+html.dark .leaflet-popup-content div[style*="color: #64748b"] {
+  color: #fda4af !important;
+}
+
+html.dark .leaflet-popup-content div[style*="color: #334155"] {
+  color: #fecdd3 !important;
+}
+
+html.dark .leaflet-popup-content span[style*="background: #f1f5f9"] {
+  background: #2b0710 !important;
+  color: #fecdd3 !important;
+}
+
+html.dark .leaflet-popup-content div[style*="border-bottom: 1px solid #f1f5f9"] {
+  border-bottom: 1px solid #3c0a16 !important;
+}
+
+/* Pulsing bloody animations */
+@keyframes blood-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+}
+
+.bloody-glow {
+  animation: blood-pulse 2.5s infinite;
+}

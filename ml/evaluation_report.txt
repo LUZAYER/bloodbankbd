@@ -1,0 +1,47 @@
+============================================================
+BLOODLINK - MACHINE LEARNING MODEL EVALUATION REPORT
+Model Architecture: Scikit-Learn RandomForestClassifier (100 estimators, max_depth=6)
+Dataset: 1,000 independent simulated healthcare emergency donation trials
+============================================================
+
+1. QUANTITATIVE PERFORMANCE METRICS:
+   - Overall Accuracy:  97.90%
+   - ROC-AUC Score:     0.9832
+   - Precision:         98.96% (High fidelity in recommended donors)
+   - Recall:            97.94% (Captures nearly all eligible candidates)
+
+2. CONFUSION MATRIX:
+   [[True Negatives (TN): 313, False Positives (FP): 7]
+    [False Negatives (FN): 14, True Positives (TP):  666]]
+
+3. DETAILED CLASSIFICATION REPORT:
+              precision    recall  f1-score   support
+
+           0       0.96      0.98      0.97       320
+           1       0.99      0.98      0.98       680
+
+    accuracy                           0.98      1000
+   macro avg       0.97      0.98      0.98      1000
+weighted avg       0.98      0.98      0.98      1000
+
+
+4. FEATURE IMPORTANCE RANKINGS:
+   - compat_score        : 0.3148 (31.5%)
+   - distance_km         : 0.0161 (1.6%)
+   - is_available        : 0.6320 (63.2%)
+   - days_since_donation : 0.0131 (1.3%)
+   - prev_donations      : 0.0058 (0.6%)
+   - response_rate       : 0.0152 (1.5%)
+   - urgency             : 0.0029 (0.3%)
+
+============================================================
+CLINICAL & ETHICAL SAFETY DISCLOSURES:
+1. Medical Safety Priority: ABO and Rh factor compatibility checks gate out
+   incompatible candidates before model ranking. The ML model ranks ONLY clinically
+   compatible candidates.
+2. Demonstration Dataset Notice: The evaluation is conducted on a synthesized
+   operational dataset modeling Bangladesh geographic proximity, cooldown intervals,
+   and donor response rates. It reflects realistic simulated behavior, not private
+   hospital electronic health records.
+3. Verification: Final cross-matching must be verified by certified medical personnel.
+============================================================

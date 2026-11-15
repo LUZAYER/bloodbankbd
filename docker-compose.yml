@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bloodbond-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=bloodbond-super-secret-production-key-bangladesh-64-districts-2026
+      - NEXT_PUBLIC_APP_NAME=BloodBond Bangladesh
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - AI_PROVIDER=rule_based
+      - ML_MICROSERVICE_URL=http://ml-service:5000
+    depends_on:
+      - ml-service
+
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: bloodbond-ml-service
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1

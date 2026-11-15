@@ -1,0 +1,15 @@
+{
+  "name": "BloodBond Bangladesh",
+  "short_name": "BloodBond",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#dc2626",
+  "background_color": "#09090b",
+  "display": "standalone",
+  "start_url": "/"
+}

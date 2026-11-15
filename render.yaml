@@ -1,0 +1,65 @@
+# ==============================================================================
+# Render Blueprint Specification (render.yaml)
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # BloodBond Bangladesh - Full-Stack Web Application (Next.js 14 + Prisma)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: bloodbond-bangladesh
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm run build:render
+    startCommand: npm run start:render
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NEXT_PUBLIC_APP_NAME
+        value: BloodBond Bangladesh
+      - key: AI_PROVIDER
+        value: rule_based
+      - key: DEFAULT_SAFETY_INTERVAL_DAYS
+        value: "90"
+      - key: DATABASE_URL
+        value: file:./dev.db
+        # To connect to Render PostgreSQL, replace the value above with:
+        # fromDatabase:
+        #   name: bloodbond-postgres
+        #   property: connectionString
+
+  # ----------------------------------------------------------------------------
+  # Optional: BloodBond Python AI & ML Microservice
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: bloodbond-ml-service
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: ml
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: FLASK_ENV
+        value: production
+
+# ------------------------------------------------------------------------------
+# Optional: Render Managed PostgreSQL Database (Free Tier)
+# Uncomment the block below to automatically provision a free cloud PostgreSQL DB
+# ------------------------------------------------------------------------------
+# databases:
+#   - name: bloodbond-postgres
+#     plan: free
+#     databaseName: bloodbond
+#     user: bloodbond_user
+#     region: oregon

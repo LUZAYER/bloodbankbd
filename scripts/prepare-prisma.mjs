@@ -11,6 +11,14 @@ const isPostgres = dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgr
 
 let schema = fs.readFileSync(schemaPath, 'utf8');
 
+// Ensure generator client has binaryTargets for both Debian and Alpine musl
+if (!schema.includes('binaryTargets')) {
+  schema = schema.replace(
+    /generator\s+client\s*\{[^}]*\}/s,
+    `generator client {\n  provider      = "prisma-client-js"\n  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]\n}`
+  );
+}
+
 if (isPostgres) {
   console.log('[Prisma Config] Detected PostgreSQL DATABASE_URL. Configuring datasource provider to "postgresql"...');
   schema = schema.replace(/provider\s*=\s*"sqlite"/, 'provider = "postgresql"');
